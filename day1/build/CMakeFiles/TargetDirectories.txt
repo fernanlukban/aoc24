@@ -1,0 +1,4 @@
+/Users/fern/Documents/projects/aoc24/day1/build/CMakeFiles/part1.dir
+/Users/fern/Documents/projects/aoc24/day1/build/CMakeFiles/part2.dir
+/Users/fern/Documents/projects/aoc24/day1/build/CMakeFiles/edit_cache.dir
+/Users/fern/Documents/projects/aoc24/day1/build/CMakeFiles/rebuild_cache.dir
