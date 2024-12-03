@@ -10,8 +10,6 @@
 class MultiplicationParser {
  public:
   std::optional<int> parse_input(const char letter) {
-    std::cout << "old_state " << static_cast<int>(state_) << "\n";
-    std::cout << "letter " << letter << "\n";
     switch (letter) {
       case 'm':
         state_ = State::M;
@@ -33,8 +31,7 @@ class MultiplicationParser {
       case '(':
         if (state_ == State::L) {
           state_ = State::LEFT_PARENS;
-        } else if (state_ == State::O || state_ == State::T) {
-          state_ = State::DO_OR_DONT_LEFT_PARENS;
+          firstNumber_ = 0;
         } else {
           state_ = State::INVALID;
         }
@@ -42,6 +39,7 @@ class MultiplicationParser {
       case ',':
         if (state_ == State::FIRST_NUMBER) {
           state_ = State::COMMA;
+          secondNumber_ = 0;
         } else {
           state_ = State::INVALID;
         }
@@ -49,44 +47,6 @@ class MultiplicationParser {
       case ')':
         if (state_ == State::SECOND_NUMBER) {
           state_ = State::RIGHT_PARENS;
-        } else if (state_ == State::DO_OR_DONT_LEFT_PARENS) {
-          state_ = State::DO_OR_DONT_RIGHT_PARENS;
-          if (inDo_.has_value()) {
-            enableMultiplcations_ = *inDo_;
-          }
-        } else {
-          state_ = State::INVALID;
-        }
-        break;
-      case 'd':
-        state_ = State::D;
-        break;
-      case 'o':
-        if (state_ == State::D) {
-          state_ = State::O;
-          inDo_ = true;
-        } else {
-          state_ = State::INVALID;
-        }
-        break;
-      case 'n':
-        if (state_ == State::O) {
-          state_ = State::N;
-        } else {
-          state_ = State::INVALID;
-        }
-        break;
-      case '\'':
-        if (state_ == State::N) {
-          state_ = State::APOSTROPHE;
-        } else {
-          state_ = State::INVALID;
-        }
-        break;
-      case 't': 
-        if (state_ == State::APOSTROPHE) {
-          state_ = State::T;
-          inDo_ = false;
         } else {
           state_ = State::INVALID;
         }
@@ -99,19 +59,10 @@ class MultiplicationParser {
         }
         break;
     }
-    if (state_ == State::INVALID) {
-      inDo_ = std::nullopt;
-    }
-    std::cout << "new_state " << static_cast<int>(state_) << "\n";
     if (state_ == State::RIGHT_PARENS) {
       if (!firstNumber_.has_value() && !secondNumber_.has_value()) {
         return std::nullopt;
       }
-      if (!enableMultiplcations_) {
-        std::cout << "DISABLING " << *firstNumber_ << " " << *secondNumber_ << "\n";
-        return std::nullopt;
-      }
-      std::cout << *firstNumber_ << " " << *secondNumber_ << "\n";
       int total = *firstNumber_ * *secondNumber_;
       reset_state();
       return total;
@@ -119,7 +70,7 @@ class MultiplicationParser {
     return std::nullopt;
   }
  private:
-  enum class State: int {
+  enum class State {
     INVALID,
     M,
     U,
@@ -129,13 +80,6 @@ class MultiplicationParser {
     COMMA,
     SECOND_NUMBER,
     RIGHT_PARENS,
-    D,
-    O,
-    N,
-    APOSTROPHE,
-    T,
-    DO_OR_DONT_LEFT_PARENS,
-    DO_OR_DONT_RIGHT_PARENS,
   };
   void reset_state() {
     state_ = State::INVALID;
@@ -163,14 +107,11 @@ class MultiplicationParser {
         secondNumber_ = *secondNumber_ * 10 + letter - '0';
         break;
       default:
-        //std::cout << static_cast<int>(state_) << " " << letter << " SHOULD NOT BE HERE\n";
         break;
     }
   }
   std::optional<int> firstNumber_;
   std::optional<int> secondNumber_;
-  std::optional<bool> inDo_;
-  bool enableMultiplcations_ = true;
   State state_;
 };
 
@@ -182,7 +123,6 @@ int main() {
   while (input >> letter) {
     auto possible_number = parser.parse_input(letter);
     if (possible_number.has_value()) {
-      std::cout << "new number " << *possible_number << "\n";
       result += *possible_number;
     }
   }
